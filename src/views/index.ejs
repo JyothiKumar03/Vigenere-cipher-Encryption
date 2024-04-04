@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptic Riddle Challenge</title>
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Material-UI Styles -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <!-- Material-UI Components -->
+    <link rel="stylesheet" href="../../public/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mui/material@5.2.3/dist/umd/material.min.css" />
+</head>
+<body class="bg-gray-200 p-8">
+    <div class="max-w-md mx-auto bg-white p-8 rounded shadow-md">
+        <h1 class="text-2xl mb-4 text-center font-bold">Cryptic Riddle Challenge</h1>
+        <form id="cryptoForm" class="space-y-4">
+            <div>
+                <label for="email" class="block">Email:</label>
+                <input type="email" id="email" name="email" class="w-full border rounded-md py-2 px-3 focus:outline-none" required>
+            </div>
+            <div>
+                <label for="phoneNumber" class="block">Phone Number:</label>
+                <input type="tel" id="phoneNumber" name="phoneNumber" class="w-full border rounded-md py-2 px-3 focus:outline-none" required>
+            </div>
+            <div>
+                <label for="name" class="block">Name:</label>
+                <input type="text" id="name" name="name" class="w-full border rounded-md py-2 px-3 focus:outline-none" required>
+            </div>
+            <div>
+                <label for="userSubmittedCode" class="block">User Text:(Enter as Single Paragraph)</label>
+                <textarea id="userSubmittedCode" name="decryptedText" rows="4" class="w-full border rounded-md py-2 px-3 focus:outline-none" required></textarea>
+            </div>
+            <div>
+                <input type="text" id="key" name="key">
+                <input type="text" id="encryptedText" name="encryptedText">
+                <button type="button" id="generateText" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none">Generate Text</button>
+                <!-- <div id="resultTab" class="hidden bg-gray-100 p-4 rounded-md mt-4"></div> -->
+                
+                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none">Submit</button>
+            </div>
+        </form>
+        <div id="resultTab" class="hidden bg-gray-100 p-4 rounded-md mt-4 text-white"></div>
+    </div>
+    <script>
+        const generateTextButton = document.getElementById('generateText');
+        const form = document.getElementById('cryptoForm');
+        const resultTab = document.getElementById('resultTab');
+
+        generateTextButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/encrypt');
+                const data = await response.json();
+                const { key, encryptedText } = data;
+                document.getElementById('key').value = key;
+                document.getElementById('encryptedText').value = encryptedText;
+            } catch (error) {
+                console.error('Error generating text:', error);
+            }
+        });
+        function showResult(message,color) {
+            // alert(message);
+            resultTab.classList.remove('hidden');
+            resultTab.textContent = message;
+            resultTab.style.backgroundColor = color;
+            resultTab.style.color = 'white';
+        }
+        form.onsubmit = async (event) => {
+            event.preventDefault();
+            try {          
+                const decryptedTextValue = document.getElementById('userSubmittedCode').value;
+                const keyValue = document.getElementById('key').value;
+                const encryptedTextValue = document.getElementById('encryptedText').value;
+                console.log('vals - ',decryptedTextValue,keyValue,encryptedTextValue)
+                let bodyForCall = {
+                        "decryptedText":decryptedTextValue,
+                        "key":keyValue,
+                        "encryptedText":encryptedTextValue
+                    }
+                console.log(bodyForCall)
+                const response = await fetch('http://localhost:3000/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bodyForCall),
+                });
+                const result = await response.json();
+                console.log(result);
+                if (response.status == 400) {
+                    showResult("Mismatch in validation", "red");
+                } else if (response.status == 200) {
+                    showResult("Successful Validation", "green");
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+            }
+        };
+    </script>
+    
+</body>
+</html>

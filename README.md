@@ -2,9 +2,6 @@
 
 Welcome to the Cryptic Riddle Challenge! This is a web application where users can solve cryptic riddles by decrypting texts using provided keys.
 
-## Overview
-
-The Cryptic Riddle Challenge allows users to submit their solutions to cryptic riddles by providing decrypted texts and keys. The server then verifies the correctness of the solution and provides feedback to the user.
 
 ## Features
 
